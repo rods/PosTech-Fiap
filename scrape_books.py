@@ -1,13 +1,16 @@
 import requests
 from bs4 import BeautifulSoup
-import json
-import time
+import csv
+import boto3
+import os
+from io import StringIO
+from datetime import datetime
 
-def scrape_books():
+def lambda_handler(event, context):
     books = []
     base_url = "https://books.toscrape.com/catalogue/page-{}.html"
     
-    for page in range(1, 6):  # Scrape first 5 pages
+    for page in range(1, 6):
         print(f"Scraping page {page}...")
         url = base_url.format(page)
         
@@ -18,20 +21,16 @@ def scrape_books():
             
             book_containers = soup.find_all('article', class_='product_pod')
             
-            for i, container in enumerate(book_containers):
-                # Get title
+            for container in book_containers:
                 title_element = container.find('h3').find('a')
                 title = title_element.get('title')
                 
-                # Get price
                 price_element = container.find('p', class_='price_color')
                 price = price_element.text.strip()
                 
-                # Get rating
                 rating_element = container.find('p', class_='star-rating')
                 rating = rating_element.get('class')[1] if rating_element else 'Unknown'
                 
-                # Get availability
                 availability_element = container.find('p', class_='instock availability')
                 availability = availability_element.text.strip() if availability_element else 'Unknown'
                 
@@ -41,7 +40,7 @@ def scrape_books():
                     "price": price,
                     "rating": rating,
                     "availability": availability,
-                    "category": "general"  # Default category since not available on listing page
+                    "category": "general"
                 }
                 
                 books.append(book)
@@ -49,17 +48,28 @@ def scrape_books():
         except requests.RequestException as e:
             print(f"Error scraping page {page}: {e}")
             continue
-            
-        time.sleep(1)  # Be respectful to the server
     
-    return books
-
-if __name__ == "__main__":
-    print("Starting book scraping...")
-    scraped_books = scrape_books()
+    # Convert to CSV
+    csv_buffer = StringIO()
+    fieldnames = ['id', 'title', 'price', 'rating', 'availability', 'category']
+    writer = csv.DictWriter(csv_buffer, fieldnames=fieldnames)
+    writer.writeheader()
+    writer.writerows(books)
     
-    # Save to JSON file
-    with open("books_scraped.json", "w", encoding="utf-8") as f:
-        json.dump(scraped_books, f, indent=2, ensure_ascii=False)
+    # Upload to S3
+    s3 = boto3.client('s3')
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    key = f"books_general_{timestamp}.csv"
     
-    print(f"Scraped {len(scraped_books)} books and saved to books_scraped.json")
+    bucket_name = os.environ.get('BUCKET_NAME', 'scrape-output')
+    s3.put_object(
+        Bucket=bucket_name,
+        Key=key,
+        Body=csv_buffer.getvalue(),
+        ContentType='text/csv'
+    )
+    
+    return {
+        'statusCode': 200,
+        'body': f'Scraped {len(books)} books and saved to s3://{bucket_name}/{key}'
+    }
