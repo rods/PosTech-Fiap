@@ -14,7 +14,6 @@ router = APIRouter(
     tags=["v1"],
 )
 
-
 @router.get("/books/top-rated")
 async def get_books_top_rated():
     top_rated_books = []
