@@ -4,9 +4,6 @@ __pycache__/
 *$py.class
 *.so
 .Python
-env/
-venv/
-ENV/
 build/
 develop-eggs/
 dist/
@@ -22,32 +19,92 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+*.pyc
 
-# Virtual Environment
+# Virtual Environments
 venv/
 ENV/
 env/
+.venv/
+.ENV/
+.env/
 
-# IDE
+# IDE and Editors
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
+.project
+.pydevproject
+.settings/
 
-# OS
+# OS Generated Files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
 
-# Project specific
-books.json
-model.pkl
-*.pkl
+# Project Specific - Data and Models (keep essential files)
+# books.json - Keep (essential data file)
+# model.pkl - Keep (essential ML model)
+# Ignore other model files
+*.joblib
+
+# Project Specific - Non-essential folders
+others/
+terraform/
+
+# Scripts and Tests (moved to others/)
 test_endpoints.py
+scrape_*.py
+deploy.sh
+setup_*.sh
+cloudformation.yaml
+README_DEPLOYMENT.md
 
-# Logs
+# Logs and Temporary Files
 *.log
+*.tmp
+*.temp
+logs/
+temp/
 
-# Environment variables
+# Environment Variables
 .env
 .env.local
+.env.production
+.env.staging
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Coverage and Testing
+.coverage
+.pytest_cache/
+htmlcov/
+.tox/
+.nox/
+
+# Documentation builds
+docs/_build/
+site/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# Backup files
+*.bak
+*.backup
+*~
+
+# Local development
+.local/

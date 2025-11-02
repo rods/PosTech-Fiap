@@ -87,6 +87,17 @@ async def get_ml_features():
     logger.info(f"Retornando {len(feature_data)} features")
     return {"Features": feature_data}
 
+def get_rating_value(rating_text):
+    """Converte rating de texto para número para comparação"""
+    rating_map = {
+        "One": 1,
+        "Two": 2, 
+        "Three": 3,
+        "Four": 4,
+        "Five": 5
+    }
+    return rating_map.get(rating_text, 0)
+
 @router.post("/ml/predictions")
 async def recommend_books(book_title: str):
     
@@ -117,6 +128,8 @@ async def recommend_books(book_title: str):
         return {"error": "Categoria do livro não reconhecida"}
     
     book_category_number = CATEGORY_MAP[book_category]
+    book_rating = book_found.get("rating")
+    book_rating_value = get_rating_value(book_rating)
     
     # Pedir ao modelo livros similares
     try:
@@ -125,18 +138,37 @@ async def recommend_books(book_title: str):
         logger.error(f"Erro ao buscar recomendações: {e}")
         return {"error": "Erro ao gerar recomendações"}
     
-    # Montar recomendações
+    # Filtrar recomendações por rating similar ou igual
     recommendations = []
-    for i in indices[0][:5]:
-        if BOOK_LIST[i]["title"] != book_found["title"]:
+    for i in indices[0]:
+        candidate_book = BOOK_LIST[i]
+        
+        # Pula o próprio livro
+        if candidate_book["title"] == book_found["title"]:
+            continue
+            
+        candidate_rating_value = get_rating_value(candidate_book.get("rating"))
+        
+        # Só recomenda se o rating for similar ou igual (diferença máxima de 1)
+        if abs(candidate_rating_value - book_rating_value) <= 1:
             recommendations.append({
-                "title": BOOK_LIST[i]["title"],
-                "category": BOOK_LIST[i]["category"],
-                "rating": BOOK_LIST[i]["rating"]
+                "title": candidate_book["title"],
+                "category": candidate_book["category"],
+                "rating": candidate_book["rating"],
+                "price": candidate_book["price"]
             })
+        
+        # Limita a 5 recomendações
+        if len(recommendations) >= 5:
+            break
     
-    logger.info(f"Retornando {len(recommendations)} recomendações para '{book_title}'")
+    logger.info(f"Retornando {len(recommendations)} recomendações para '{book_title}' com rating similar")
     return {
-        "input_book": book_found["title"],
-        "recommendations": recommendations
+        "input_book": {
+            "title": book_found["title"],
+            "rating": book_found["rating"],
+            "price": book_found["price"]
+        },
+        "recommendations": recommendations,
+        "filter_criteria": f"Rating similar ou igual a '{book_rating}'"
     }

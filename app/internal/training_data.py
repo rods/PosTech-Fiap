@@ -125,7 +125,7 @@ def train_recommendation_model():
         return
     
     print(f"Total de grupos: {len(set(category_groups.values()))}")
-    print("✓ Processo concluído com sucesso!")
+    print("Processo concluído com sucesso!")
 
 if __name__ == "__main__":
     train_recommendation_model()
