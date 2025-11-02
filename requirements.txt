@@ -1,20 +1,10 @@
-# Core FastAPI dependencies
-fastapi==0.120.4
-uvicorn==0.38.0
-pydantic==2.12.3
-
-# HTTP requests
-requests==2.32.5
-
-# Web scraping (for data collection scripts)
-beautifulsoup4==4.14.2
-
-# AWS services
-boto3==1.40.64
-
-# Machine Learning
-scikit-learn==1.7.2
-numpy==2.3.4
-
-# Additional utilities
-python-dateutil==2.9.0.post0
+requests
+beautifulsoup4
+boto3
+fastapi
+uvicorn
+PyJWT
+passlib[bcrypt]
+python-multipart
+sqlalchemy
+python-dotenv

@@ -108,3 +108,6 @@ site/
 
 # Local development
 .local/
+
+package/
+lambda_function.zip
