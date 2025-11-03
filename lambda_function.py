@@ -30,7 +30,7 @@ def lambda_handler(event, context):
     base_url = "https://books.toscrape.com/catalogue/page-{}.html"
     rating_map = {'One': 1, 'Two': 2, 'Three': 3, 'Four': 4, 'Five': 5}
     
-    for page in range(1, 6):
+    for page in range(1, 50):
         print(f"Scraping page {page}...")
         url = base_url.format(page)
         
@@ -57,6 +57,13 @@ def lambda_handler(event, context):
                 availability_element = container.find('p', class_='instock availability')
                 availability = availability_element.text.strip() if availability_element else 'Unknown'
                 
+                img_tag = container.select('div.image_container a img')
+                if img_tag:
+                    img_tag = img_tag[0]
+                    img_src = img_tag['src']
+                    img_src = img_src.replace('../','https://books.toscrape.com/catalogue/')   
+                else:
+                    ''
                 category = get_book_category(book_url)
                 
                 book = {
@@ -65,7 +72,8 @@ def lambda_handler(event, context):
                     "price": price,
                     "rating": rating,
                     "availability": availability,
-                    "category": category
+                    "category": category,
+                    "image": img_src
                 }
                 
                 books.append(book)
@@ -73,10 +81,10 @@ def lambda_handler(event, context):
         except requests.RequestException as e:
             print(f"Error scraping page {page}: {e}")
             continue
-    
+
     # Convert to CSV
     csv_buffer = StringIO()
-    fieldnames = ['id', 'title', 'price', 'rating', 'availability', 'category']
+    fieldnames = ['id', 'title', 'price', 'rating', 'availability', 'category','image']
     writer = csv.DictWriter(csv_buffer, fieldnames=fieldnames)
     writer.writeheader()
     writer.writerows(books)

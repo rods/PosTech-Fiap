@@ -43,7 +43,7 @@ def lambda_handler(event, context):
         
         for row_num, row in enumerate(csv_reader, 1):
             try:
-                if not all(field in row for field in ['id', 'title', 'price', 'rating', 'availability', 'category']):
+                if not all(field in row for field in ['id', 'title', 'price', 'rating', 'availability', 'category', 'image']):
                     errors.append(f"Row {row_num}: Missing fields")
                     continue
                 
@@ -53,7 +53,8 @@ def lambda_handler(event, context):
                     'price': Decimal(str(row['price'])),
                     'rating': int(row['rating']),
                     'availability': row['availability'].strip(),
-                    'category': row['category'].strip()
+                    'category': row['category'].strip(),
+                    'image': row['image'].strip()
                 }
                 
                 table.put_item(
