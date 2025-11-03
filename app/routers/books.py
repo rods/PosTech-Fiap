@@ -114,15 +114,22 @@ async def read_books_search(request: Request, title: str = None, category: str =
     return {"error": "Categoria ou titulo necessario para processar busca"}
 
 @router.get("/books/{id}")
-async def read_books_id(id: int, request: Request):
+async def read_books_id(id: str, request: Request):
     try:
         response = table.get_item(Key={'id': id})
-        if 'Item' in response:
-            logger.info(f"Busca por id - {id} - realizada por {request.client.host}")
-            return response['Item']
-    except:
-        pass
-    return {"error": "Book not found"}
+        item = response.get('Item')
+        if not item:
+            raise HTTPException(status_code=404, detail="Book not found")
+
+        logger.info(f"Busca por id={id} realizada por {request.client.host}")
+        return item
+
+    except ClientError as e:
+        logger.error(f"DynamoDB error: {e.response['Error']['Message']}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+    except Exception as e:
+        logger.exception(f"Unexpected error: {e}")
+        raise HTTPException(status_code=500, detail="Unexpected error")
 
 @router.get("/books")
 async def read_books(request: Request):
