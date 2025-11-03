@@ -30,7 +30,7 @@ router = APIRouter(
 
 @router.post("/books", 
     responses={
-        201: {"description": "Livro inserido com sucesso"},
+        201: {"description": "Livro inserido com sucesso."},
         401: {"description": "Authentication required"},
         409: {"description": "Já existe um livro com esse ID"},
         500: {"description": "Internal server error"}
