@@ -144,6 +144,7 @@ async def read_book_categories(request: Request):
     return list(set(b['category'] for b in books))
 
 
+
 @router.get("/health")
 async def read_api_health(request: Request):
     pass
