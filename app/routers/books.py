@@ -118,6 +118,7 @@ async def read_books_id(id: int, request: Request):
     try:
         response = table.get_item(Key={'id': id})
         item = response.get('Item')
+
         if not item:
             raise HTTPException(status_code=404, detail="Book not found")
 
@@ -126,10 +127,11 @@ async def read_books_id(id: int, request: Request):
 
     except ClientError as e:
         logger.error(f"DynamoDB error: {e.response['Error']['Message']}")
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        raise HTTPException(status_code=500, detail=e.response['Error']['Message'])
+
     except Exception as e:
         logger.exception(f"Unexpected error: {e}")
-        raise HTTPException(status_code=500, detail="Unexpected error")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/books")
 async def read_books(request: Request):
