@@ -1,8 +1,8 @@
 {
     "compatibilities": [
         "EC2",
-        "FARGATE",
-        "MANAGED_INSTANCES"
+        "MANAGED_INSTANCES",
+        "FARGATE"
     ],
     "containerDefinitions": [
         {
@@ -18,8 +18,7 @@
                     "awslogs-create-group": "true",
                     "awslogs-region": "us-east-2",
                     "awslogs-stream-prefix": "ecs"
-                },
-                "secretOptions": []
+                }
             },
             "mountPoints": [],
             "name": "books-api",
@@ -38,13 +37,12 @@
         }
     ],
     "cpu": "1024",
-    "enableFaultInjection": false,
     "executionRoleArn": "arn:aws:iam::585517712499:role/ecsTaskExecutionRole",
     "family": "books-api",
     "memory": "2048",
     "networkMode": "awsvpc",
     "placementConstraints": [],
-    "registeredAt": "2025-11-02T23:05:37.295Z",
+    "registeredAt": "2025-11-03T22:44:10.602Z",
     "registeredBy": "arn:aws:iam::585517712499:user/lucas",
     "requiresAttributes": [
         {
@@ -78,13 +76,13 @@
     "requiresCompatibilities": [
         "FARGATE"
     ],
-    "revision": 8,
+    "revision": 9,
     "runtimePlatform": {
         "cpuArchitecture": "X86_64",
         "operatingSystemFamily": "LINUX"
     },
     "status": "ACTIVE",
-    "taskDefinitionArn": "arn:aws:ecs:us-east-2:585517712499:task-definition/books-api:8",
+    "taskDefinitionArn": "arn:aws:ecs:us-east-2:585517712499:task-definition/books-api:9",
     "taskRoleArn": "arn:aws:iam::585517712499:role/ECS-Role",
     "volumes": [],
     "tags": []
