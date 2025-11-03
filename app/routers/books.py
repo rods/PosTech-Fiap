@@ -9,7 +9,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 dynamodb = boto3.resource('dynamodb', region_name='us-east-2')
-table = dynamodb.Table('books')
+table = dynamodb.Table('Books')
 
 class Book(BaseModel):
     id: int
