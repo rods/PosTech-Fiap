@@ -114,7 +114,7 @@ async def read_books_search(request: Request, title: str = None, category: str =
     return {"error": "Categoria ou titulo necessario para processar busca"}
 
 @router.get("/books/{id}")
-async def read_books_id(id: str, request: Request):
+async def read_books_id(id: int, request: Request):
     try:
         response = table.get_item(Key={'id': id})
         item = response.get('Item')
