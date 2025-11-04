@@ -23,13 +23,10 @@ class Token(BaseModel):
 @router.post("/auth/login", response_model=Token)
 def login(user: UserLogin):
     """
-    AAutentica o usuario e retorna JWT access token.
+    Autentica o usuario e retorna JWT access token.
     
-    For testing purposes, you can use:
-    - username: "admin"
-    - password: "admin123"
+    Credentials are validated against DynamoDB users table.
     """
-    # Authenticate user
     authenticated_user = authenticate_user(user.username, user.password)
     if not authenticated_user:
         logger.warning(f"Failed login attempt for user: {user.username}")
@@ -39,7 +36,6 @@ def login(user: UserLogin):
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    # Create JWT token
     access_token = create_access_token(data={"sub": user.username})
     logger.info(f"Successful login for user: {user.username}")
     
@@ -48,6 +44,7 @@ def login(user: UserLogin):
         "token_type": "bearer",
         "message": "Login successful"
     }
+
 
 @router.get("/auth/status")
 def auth_status():

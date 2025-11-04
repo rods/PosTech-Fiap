@@ -28,6 +28,8 @@ router = APIRouter(
     tags=["v1"],
 )
 
+
+### create books. protegido por JWT ####
 @router.post("/books", 
     responses={
         201: {"description": "Livro inserido com sucesso."},
@@ -36,14 +38,14 @@ router = APIRouter(
         500: {"description": "Internal server error"}
     },
     summary="Insere um novo livro",
-    description="Insere um livro na coleção. Requires JWT authentication."
+    description="Insere um livro na coleção. Requires JWT authentication.",
+    status_code=201
 )
 async def create_book(
     book: Book, 
     request: Request,
     current_user = Depends(get_current_user)
 ):
-
     try:
         table.put_item(
             Item={
@@ -62,18 +64,12 @@ async def create_book(
             "id": book.id,
             "created_by": current_user.username
         }
-    except dynamodb.meta.client.exceptions.ConditionalCheckFailedException:
-        logger.warning(f"Attempt to create duplicate book ID {book.id} by user {current_user.username}")
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=f"Book with ID {book.id} already exists"
-        )
-    except Exception as e:
-        logger.error(f"Error creating book {book.id} by user {current_user.username}: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal server error occurred while creating book"
-        )
+    except ClientError as e:
+        if e.response['Error']['Code'] == 'ConditionalCheckFailedException':
+            raise HTTPException(status_code=409, detail="Já existe um livro com esse ID")
+        logger.error(f"Error creating book: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
 
 @router.get("/books/top-rated")
 async def get_books_top_rated():
@@ -91,28 +87,48 @@ async def read_books_search(min: int = None, max: int = None):
     if not price_range:
         return {"error": "Nenhum livro encontrado nessa faixa de preço."}
     return price_range
-       
-@router.get("/books/search")
-async def read_books_search(request: Request, title: str = None, category: str = None):
-    books = get_all_books()
-    client_ip = request.client.host
-    
-    if title and category:
-        result = [b for b in books if b['title'] == title and b['category'] == category]
-        logger.info(f"Busca por titulo - {title} - e categoria - {category} - realizada por {client_ip}")
-        return result
-    elif title:
-        result = [b for b in books if b['title'] == title]
-        logger.info(f"Busca por titulo - {title} - realizada por {client_ip}")
-        return result
-    elif category:
-        result = [b for b in books if b['category'] == category]
-        logger.info(f"Busca por categoria - {category} - realizada por {client_ip}")
-        return result
-    
-    logger.info(f"Busca invalida - sem titulo ou categoria - realizada por {client_ip}")
-    return {"error": "Categoria ou titulo necessario para processar busca"}
 
+
+##### buscar books por categoria e/ou title ########
+@router.get("/books/search")
+async def read_books_search(
+    request: Request,
+    title: str = None,
+    category: str = None,
+):
+    if not title and not category:
+        raise HTTPException(status_code=400, detail="Categoria ou titulo necessario para processar busca")
+    
+    try:
+        filter_parts = []
+        expr_values = {}
+        
+        if title:
+            filter_parts.append("contains(#title, :title)")
+            expr_values[':title'] = title
+        
+        if category:
+            filter_parts.append("#category = :category")
+            expr_values[':category'] = category
+        
+        response = table.scan(
+            FilterExpression=' AND '.join(filter_parts),
+            ExpressionAttributeNames={
+                '#title': 'title',
+                '#category': 'category'
+            },
+            ExpressionAttributeValues=expr_values
+        )
+        
+        logger.info(f"Search title={title} category={category}")
+        return response.get('Items', [])
+    
+    except ClientError as e:
+        logger.error(f"Search error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+##### get books by id #########
 @router.get("/books/{id}")
 async def read_books_id(id: int, request: Request):
     try:
@@ -146,7 +162,7 @@ async def read_book_categories(request: Request):
     return list(set(b['category'] for b in books))
 
 
-
+######## health check #######
 @router.get("/health")
-async def read_api_health(request: Request):
-    pass
+async def read_api_health():
+    return {"status": "ok"}
