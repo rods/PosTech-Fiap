@@ -4,6 +4,8 @@ from jwt.exceptions import InvalidTokenError
 from fastapi import HTTPException, status, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 import os
+import boto3
+from botocore.exceptions import ClientError
 
 SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-here-make-it-long-and-secure")
 ALGORITHM = "HS256"
