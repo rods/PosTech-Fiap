@@ -53,10 +53,10 @@ PosTech-Fiap/
 
 bash
 aws configure
-# AWS Access Key ID: [sua-key]
-# AWS Secret Access Key: [seu-secret]
-# Default region name: us-east-2
-# Default output format: json
+AWS Access Key ID: [sua-key]
+AWS Secret Access Key: [seu-secret]
+Default region name: us-east-2
+Default output format: json
 
 ### 2. Criar Tabelas DynamoDB
 
