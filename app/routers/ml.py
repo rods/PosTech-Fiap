@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Request, Query
+from fastapi import APIRouter, Request
+from pydantic import BaseModel
 import json
 import logging
 from app.internal.training_data import train_recommendation_model
@@ -36,6 +37,9 @@ router = APIRouter(
     prefix="/api/v1",
     tags=["v1"],
 )
+
+class BookTitleRequest(BaseModel):
+    book_title: str
 
 # Mapa de categorias como constante global
 CATEGORY_MAP = {
@@ -98,7 +102,7 @@ def get_rating_value(rating_text):
     return rating_map.get(rating_text, 0)
 
 @router.post("/ml/predictions")
-async def recommend_books(book_title: str = Query(...)):
+async def recommend_books(request: BookTitleRequest):
     
     # Verifica se o modelo está carregado
     if model is None:
@@ -112,12 +116,12 @@ async def recommend_books(book_title: str = Query(...)):
     # Buscar o livro
     book_found = None
     for book in BOOK_LIST:
-        if book["title"].lower() == book_title.lower():
+        if book["title"].lower() == request.book_title.lower():
             book_found = book
             break
     
     if not book_found:
-        logger.warning(f"Livro '{book_title}' não encontrado")
+        logger.warning(f"Livro '{request.book_title}' não encontrado")
         return {"error": "Livro não encontrado"}
     
     # Verificar se a categoria existe no mapa
@@ -161,7 +165,7 @@ async def recommend_books(book_title: str = Query(...)):
         if len(recommendations) >= 5:
             break
     
-    logger.info(f"Retornando {len(recommendations)} recomendações para '{book_title}' com rating similar")
+    logger.info(f"Retornando {len(recommendations)} recomendações para '{request.book_title}' com rating similar")
     return {
         "input_book": {
             "title": book_found["title"],
