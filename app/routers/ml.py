@@ -1,5 +1,4 @@
-from fastapi import APIRouter
-from fastapi import Request
+from fastapi import APIRouter, Request, Query
 import json
 import logging
 from app.internal.training_data import train_recommendation_model
@@ -99,7 +98,7 @@ def get_rating_value(rating_text):
     return rating_map.get(rating_text, 0)
 
 @router.post("/ml/predictions")
-async def recommend_books(book_title: str):
+async def recommend_books(book_title: str = Query(...)):
     
     # Verifica se o modelo está carregado
     if model is None:
