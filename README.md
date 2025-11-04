@@ -102,9 +102,9 @@ cd PosTech-Fiap
 
 bash
 python3.11 -m venv venv
-source venv/bin/activate  # Linux/Mac
-# ou
-venv\Scripts\activate     # Windows
+source venv/bin/activate (Linux/Mac) 
+ou 
+venv\Scripts\activate (Windows)
 
 ### 3. Instalar Dependências
 
@@ -248,10 +248,6 @@ O deploy é automatizado via GitHub Actions:
 4. **Deploy** no ECS Fargate
 
 ### Workflow (.github/workflows/deploy.yml)
-
-yaml
-# Executado automaticamente em push para main
-# Não requer configuração manual
 
 ## 🤖 Sistema de Scraping
 
