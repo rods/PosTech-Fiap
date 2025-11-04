@@ -223,6 +223,36 @@ Authorization: Bearer {token}
 
 ---
 
+#### 5. Recomendação de  Livros (ML)
+
+```http
+POST /api/v1/ml/predictions"
+Content-Type: application/json
+{
+ "book_title": "Clean Code"
+}
+```
+**Response:**
+```json
+{
+  "input_book": {
+    "title": "Clean Code",
+    "rating": "One",
+    "price": "89.99"
+  },
+  "recommendations": [
+    {
+      "title": "Mesaerion: The Best Science Fiction Stories 1800-1849",
+      "category": "Science Fiction",
+      "rating": "One",
+      "price": "£37.59"
+    }
+  ],
+  "filter_criteria": "Rating similar ou igual a 'One'"
+}
+```
+---
+
 ### Autenticação
 
 Todas as rotas POST requerem autenticação JWT.
@@ -257,10 +287,7 @@ O deploy é automatizado via GitHub Actions:
 ## 🧠 Modelo de Recomendação
 
 Localizado em `/app/internal/`, o modelo de Machine Learning analisa:
-- Histórico de buscas
 - Ratings dos livros
-- Categorias relacionadas
-- Padrões de disponibilidade
 
 Retorna recomendações.
 
